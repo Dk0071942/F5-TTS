@@ -6,6 +6,8 @@ import re
 import tempfile
 from collections import OrderedDict
 from importlib.resources import files
+from pathlib import Path
+import os
 
 import click
 import gradio as gr
@@ -766,6 +768,33 @@ If you're having issues, try converting your reference audio to WAV or MP3, clip
 
     last_used_custom = files("f5_tts").joinpath("infer/.cache/last_used_custom_model_info_v1.txt")
 
+    def scan_ckpts_directory():
+        """Scan the ckpts directory for models and vocab files."""
+        project_root = Path(__file__).resolve().parent.parent.parent.parent
+        ckpts_dir = project_root / "ckpts"
+        
+        model_paths = []
+        vocab_paths = []
+        
+        if ckpts_dir.exists():
+            # Walk through the ckpts directory
+            for root, dirs, files in os.walk(ckpts_dir):
+                root_path = Path(root)
+                
+                # Find safetensors model files
+                for file in files:
+                    if file.endswith(".safetensors"):
+                        model_paths.append(str(root_path / file))
+                
+                # Find vocab.txt files
+                if "vocab.txt" in files:
+                    vocab_paths.append(str(root_path / "vocab.txt"))
+        
+        return model_paths, vocab_paths
+
+    # Scan for models in the ckpts directory
+    ckpts_models, ckpts_vocabs = scan_ckpts_directory()
+
     def load_last_used_custom():
         try:
             custom = []
@@ -807,14 +836,14 @@ If you're having issues, try converting your reference audio to WAV or MP3, clip
                 choices=[DEFAULT_TTS_MODEL, "E2-TTS"], label="Choose TTS Model", value=DEFAULT_TTS_MODEL
             )
         custom_ckpt_path = gr.Dropdown(
-            choices=[DEFAULT_TTS_MODEL_CFG[0]],
+            choices=[DEFAULT_TTS_MODEL_CFG[0]] + ckpts_models,
             value=load_last_used_custom()[0],
             allow_custom_value=True,
             label="Model: local_path | hf://user_id/repo_id/model_ckpt",
             visible=False,
         )
         custom_vocab_path = gr.Dropdown(
-            choices=[DEFAULT_TTS_MODEL_CFG[1]],
+            choices=[DEFAULT_TTS_MODEL_CFG[1]] + ckpts_vocabs,
             value=load_last_used_custom()[1],
             allow_custom_value=True,
             label="Vocab: local_path | hf://user_id/repo_id/vocab_file",
