@@ -95,6 +95,12 @@ conda activate f5-tts
 > pip install -e .
 > ```
 
+### Some versions of pydantic are known to cause error with Gradio. Please try the following fix.
+
+ ```
+pip install pydantic==2.10.6
+ ```
+
 ### Docker usage also available
 ```bash
 # Build from Dockerfile
