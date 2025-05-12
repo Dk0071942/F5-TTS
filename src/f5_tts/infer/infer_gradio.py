@@ -1181,7 +1181,6 @@ If you're having issues, try converting your reference audio to WAV or MP3, clip
     )
     custom_model_cfg = gr.Dropdown(
         choices=[
-            DEFAULT_TTS_MODEL_CFG[2],
             json.dumps(
                 dict(
                     dim=1024,
@@ -1192,6 +1191,16 @@ If you're having issues, try converting your reference audio to WAV or MP3, clip
                     text_mask_padding=False,
                     conv_layers=4,
                     pe_attn_head=1,
+                )
+            ),
+            json.dumps(
+                dict(
+                    dim=1024,
+                    depth=22,
+                    heads=16,
+                    ff_mult=2,
+                    text_dim=512,
+                    conv_layers=4,
                 )
             ),
             json.dumps(
